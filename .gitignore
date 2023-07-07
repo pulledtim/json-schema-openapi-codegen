@@ -3,3 +3,6 @@
 target
 pom.xml.releaseBackup
 release.properties
+schema/*
+.idea/*
+gen/*

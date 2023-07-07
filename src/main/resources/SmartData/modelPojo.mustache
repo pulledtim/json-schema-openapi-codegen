@@ -9,12 +9,17 @@
 public {{#discriminator}}abstract {{/discriminator}}class {{classname}}{{^parentModel.interfaces}}{{#parent}} extends {{{parent}}}{{/parent}}{{/parentModel.interfaces}}{{#vendorExtensions.x-implements}}{{#-first}} implements {{{.}}}{{/-first}}{{^-first}}, {{{.}}}{{/-first}}{{/vendorExtensions.x-implements}} {
 
 {{#vars}}
-	public static final java.lang.String JSON_PROPERTY_{{nameInSnakeCase}} = "{{baseName}}";
+	public static final java.lang.String NGSI_PROPERTY_{{nameInSnakeCase}} = "{{name}}";
 {{/vars}}{{#discriminator}}	public static final String JSON_DISCRIMINATOR = "{{propertyBaseName}}";
 {{/discriminator}}
 
 {{#vars}}{{#description}}	/** {{description}} */
-{{/description}}{{#useBeanValidation}}{{>modelPropertyValidation}}{{/useBeanValidation}}{{>modelPropertyJackson}}
+{{/description}}{{#useBeanValidation}}{{>modelPropertyValidation}}{{/useBeanValidation}}
+{{#vendorExtensions.ngsi_relationship}}{{>modelRelationshipNGSI}}{{/vendorExtensions.ngsi_relationship}}
+{{^vendorExtensions.ngsi_relationship}}
+{{#vendorExtensions.ngsi_relationshiplist}}{{>modelRelationshipListNGSI}}{{/vendorExtensions.ngsi_relationshiplist}}
+{{^vendorExtensions.ngsi_relationshiplist}}{{>modelPropertyNGSI}}{{/vendorExtensions.ngsi_relationshiplist}}
+{{/vendorExtensions.ngsi_relationship}}
 	private {{>modelPropertyType}} {{name}}{{>modelPropertyDefault}};
 
 {{/vars}}
@@ -128,15 +133,7 @@ public {{#discriminator}}abstract {{/discriminator}}class {{classname}}{{^parent
 	}
 {{/vendorExtensions.additionalPropertiesMap}}
 
-	// getter/setter{{#vars}}
-
-	public {{>modelPropertyType}} {{getter}}() {
-		return {{name}};
-	}
-
-	public void {{setter}}({{>modelPropertyType}} new{{nameInCamelCase}}) {
-		this.{{name}} = new{{nameInCamelCase}};
-	}{{/vars}}{{#vars}}{{#isEnum}}
+	{{#vars}}{{#isEnum}}
 
 {{>modelEnum}}{{/isEnum}}{{/vars}}
 }{{/vendorExtensions.x-is-one-of-interface}}{{#vendorExtensions.x-is-one-of-interface}}{{^discriminator}}@com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.DEDUCTION, visible = true)

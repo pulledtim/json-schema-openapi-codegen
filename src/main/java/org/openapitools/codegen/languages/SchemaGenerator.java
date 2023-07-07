@@ -5,14 +5,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.openapitools.codegen.CodegenModel;
-import org.openapitools.codegen.CodegenProperty;
-import org.openapitools.codegen.model.ModelMap;
 import org.openapitools.codegen.model.ModelsMap;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class SchemaGenerator {
@@ -25,20 +23,8 @@ public class SchemaGenerator {
         this.schemaRegistry = schemaRegistry;
     }
 
-    private boolean isEntity(ModelsMap model) {
-        return model
-                .getModels()
-                .stream()
-                .map(ModelMap::getModel)
-                .map(CodegenModel::getVars)
-                .flatMap(Collection::stream)
-                .map(CodegenProperty::getName)
-                .anyMatch("id"::equals);
-    }
-
-
-    private boolean isEntity(JsonNode model) {
-        return Optional.of(model)
+    public boolean isEntity(JsonNode model) {
+        return Optional.ofNullable(model)
                 .filter(m -> m.has("properties"))
                 .map(m -> m.get("properties"))
                 .filter(m -> m.has("id"))
@@ -46,16 +32,17 @@ public class SchemaGenerator {
     }
 
     private boolean isEnum(JsonNode model) {
-        return Optional.of(model)
+        return Optional.ofNullable(model)
                 .filter(m -> m.has("enum"))
                 .isPresent();
     }
 
     /**
      * Doesn't follow the flow of the normal code generator due to it being easier to generate json this way and not via mustache files
+     *
      * @param objs
      */
-    private void writeSchemata(Map<String, ModelsMap> objs) {
+    public void writeSchemata(Map<String, ModelsMap> objs, Map<String,String> fieldRenames) {
         Map<String, JsonNode> models = new HashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         objs
@@ -81,13 +68,31 @@ public class SchemaGenerator {
                         e.setAll(descriptionOfModel);
                         e.setAll(schemaGenerics());
                     });
+
+            fieldRenames.forEach((oldKey,newKey)->replaceFieldName(oldKey, newKey, entry.getValue()));
+
             try {
-                Files.writeString(Path.of(outputDir, entry.getKey() + ".json"), entry.getValue().toPrettyString());
+                Path path = Path.of(outputDir, "schema/", entry.getKey() + ".json");
+                Files.createDirectories(path.getParent());
+                Files.writeString(path, entry.getValue().toPrettyString(), StandardOpenOption.CREATE);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
-        models.values().forEach(model -> System.out.println());
+    }
+
+    private void replaceFieldName(String oldName, String newName, JsonNode json) {
+        List<JsonNode> parentsOfOldFieldName = searchForParentOfEntity(json, oldName);
+        parentsOfOldFieldName.stream().forEach(parent -> {
+            if (parent instanceof ObjectNode) {
+                ObjectNode baseNode = (ObjectNode) parent;
+                JsonNode oldNode = baseNode.get(oldName);
+                if (oldNode != null) {
+                    baseNode.set(newName, oldNode);
+                    baseNode.remove(oldName);
+                }
+            }
+        });
     }
 
     private String generateSchemaUrl(String packageName, String modelName) {
@@ -141,12 +146,6 @@ public class SchemaGenerator {
                 .ifPresent(a -> answer.put("$schemaVersion", a));
         answer.put("$id", JsonNodeFactory.instance.textNode(generateSchemaUrl((String) currentEntity.get("packageName"), (String) currentEntity.get("classname")) + "/schema.json"));
         return answer;
-    }
-
-    private void migrateNullables(Map<String, JsonNode> models) {
-        models.values().forEach(model -> {
-
-        });
     }
 
     private List<JsonNode> searchForParentOfEntity(JsonNode node, String entityName) {

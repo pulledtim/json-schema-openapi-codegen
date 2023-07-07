@@ -33,7 +33,7 @@ public class AbstractCodegenTest {
 			fail("failed to delete folder", e);
 		}
 		return new CodegenConfigurator()
-				.setGeneratorName("micronaut")
+				.setGeneratorName("smart-data")
 				.setStrictSpecBehavior(true)
 				.setValidateSpec(true)
 				.setPackageName(packageName)
