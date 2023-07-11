@@ -48,7 +48,7 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: '17'
-          java-package: jdk
+          distribution: temurin
 
       - name: Set the version
         run: |
