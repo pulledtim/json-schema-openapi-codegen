@@ -64,7 +64,7 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
         run: |
-          mvn -X tidy:pom install deploy --settings=.github/settings.xml
+          mvn install deploy --settings=.github/settings.xml
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:

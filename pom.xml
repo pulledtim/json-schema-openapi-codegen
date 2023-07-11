@@ -294,6 +294,7 @@
 		<plugins>
 			<!-- Disable as the pipeline seems to adjust the pom to something that violates the rules -->
 			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>tidy-maven-plugin</artifactId>
 				<configuration>
 					<skip>true</skip>
