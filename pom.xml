@@ -335,25 +335,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- run invoker tests -->
-<!--			<plugin>-->
-<!--				<groupId>org.apache.maven.plugins</groupId>-->
-<!--				<artifactId>maven-invoker-plugin</artifactId>-->
-<!--				<executions>-->
-<!--					<execution>-->
-<!--						<goals>-->
-<!--							<goal>install</goal>-->
-<!--							<goal>integration-test</goal>-->
-<!--							<goal>verify</goal>-->
-<!--						</goals>-->
-<!--						<configuration>-->
-<!--							<parallelThreads>0.5C</parallelThreads>-->
-<!--						</configuration>-->
-<!--					</execution>-->
-<!--				</executions>-->
-<!--			</plugin>-->
-
 		</plugins>
 	</build>
 </project>
