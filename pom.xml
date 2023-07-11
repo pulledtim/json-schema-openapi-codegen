@@ -9,17 +9,17 @@
 		<relativePath />
 	</parent>
 
-	<groupId>io.kokuwa.smart-data-models</groupId>
+	<groupId>io.github.pulledtim</groupId>
 	<artifactId>json-openapi-codegen</artifactId>
 	<version>3.4.2-SNAPSHOT</version>
 
 	<name>OpenAPI codegen for Micronaut</name>
 	<description>This is an openapi generator for Micronaut.</description>
-	<url>https://github.com/kokuwaio/micronaut-openapi-codegen</url>
+	<url>https://github.com/pulledtim/json-schema-openapi-codegen</url>
 	<inceptionYear>2019</inceptionYear>
 	<organization>
-		<name>Kokuwa.io</name>
-		<url>http://kokuwa.io</url>
+		<name>FIWARE Foundation</name>
+		<url>http://fiware.org</url>
 	</organization>
 	<licenses>
 		<license>
@@ -31,12 +31,12 @@
 
 	<developers>
 		<developer>
-			<id>sschnabe</id>
-			<name>Stephan Schnabel</name>
-			<url>https://github.com/sschnabe</url>
-			<email>stephan@grayc.de</email>
-			<organization>GrayC GmbH</organization>
-			<organizationUrl>https://grayc.de</organizationUrl>
+			<id>pulledtim</id>
+			<name>Tim Smyth</name>
+			<url>https://github.com/pulledtim</url>
+			<email>tim.smyth@fiware.org</email>
+			<organization>FIWARE Foundation</organization>
+			<organizationUrl>https://fiware.org</organizationUrl>
 			<timezone>Europe/Berlin</timezone>
 			<roles>
 				<role>Lead Developer</role>
@@ -44,20 +44,17 @@
 		</developer>
 	</developers>
 
-	<scm>
-		<url>https://github.com/kokuwaio/micronaut-openapi-codegen</url>
-		<connection>scm:git:https://github.com/kokuwaio/micronaut-openapi-codegen.git</connection>
-		<developerConnection>scm:git:https://github.com/kokuwaio/micronaut-openapi-codegen.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
-	<issueManagement>
-		<system>github</system>
-		<url>https://github.com/kokuwaio/micronaut-openapi-codegen/issues</url>
-	</issueManagement>
-	<ciManagement>
-		<system>github</system>
-		<url>https://github.com/kokuwaio/micronaut-openapi-codegen/actions</url>
-	</ciManagement>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>github</id>
+			<url>https://maven.pkg.github.com/pulledtim/json-schema-openapi-codegen/</url>
+		</snapshotRepository>
+		<repository>
+			<id>github</id>
+			<name>GitHub pulledtim Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/pulledtim/json-schema-openapi-codegen</url>
+		</repository>
+	</distributionManagement>
 
 	<properties>
 

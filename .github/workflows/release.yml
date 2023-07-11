@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  generate-version:
+    runs-on: ubuntu-latest
+
+    outputs:
+      version: ${{ steps.out.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+          java-package: jdk
+
+      - id: pr
+        uses: actions-ecosystem/action-get-merged-pull-request@v1.0.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: zwaldowski/semver-release-action@v2
+        with:
+          dry_run: true
+          bump: ${{ steps.pr.outputs.labels }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set version output
+        id: out
+        run: echo "::set-output name=version::$(echo ${VERSION})"
+
+  build-and-deploy:
+
+    needs: [ "generate-version" ]
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Set version
+        run: |
+          mvn versions:set -DnewVersion=${{ needs.generate-version.outputs.version }}
+
+      - name: Execute tests
+        id: test
+        run: |
+          mvn clean test
+
+      - name: Build and release it
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+        run: |
+          mvn install deploy --settings=.github/settings.xml
+
+
+  git-release:
+    needs: [ "generate-version", "build-and-deploy" ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v2
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: ${{ needs.generate-version.outputs.version }}
+          prerelease: false
+          title: ${{ needs.generate-version.outputs.version }}
