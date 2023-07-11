@@ -36,7 +36,7 @@ jobs:
 
       - name: Set version output
         id: out
-        run: echo "::set-output name=version::$(echo ${VERSION}-PRE-${{ steps.pr_number.outputs.nr }})"
+        run: echo "::set-output name=version::$(echo ${VERSION}-PRE-${{ steps.pr_number.outputs.nr }}-${{github.run_number}})"
 
   # build
   build-and-release:
