@@ -265,137 +265,137 @@ public class SmartDataCodegen extends AbstractJavaCodegen
     public CodegenOperation fromOperation(String path, String httpMethod, Operation source, List<Server> servers) {
 
         var operation = super.fromOperation(path, httpMethod, source, servers);
-        var produces = operation.produces == null ? List.<Map<String, String>>of() : operation.produces;
-
-        // warn if operation has wildcard/range responses
-
-        if (operation.responses.stream().allMatch(CodegenResponse::isWildcard)) {
-            throw new SpecValidationException("Only default response is not supported.");
-        }
-        if (operation.responses.stream().anyMatch(CodegenResponse::isRange)) {
-            throw new SpecValidationException("Range responses are not supported.");
-        }
-
-        // get responses for considering repsonse type
-
-        var responses = operation.responses.stream().filter(r -> r.is2xx || r.is3xx).collect(Collectors.toList());
-        var responsesCodes = responses.stream().map(r -> Integer.parseInt(r.code)).collect(Collectors.toList());
-        var responseGeneric = useGenericResponse;
-        var dataTypes = responses.stream().map(r -> r.dataType).collect(Collectors.toSet());
-
-        if (!responseGeneric && responses.size() > 1) {
-            LOG.info("operation {} has multiple responses {}, use generic response",
-                    operation.nickname, responsesCodes);
-            responseGeneric = true;
-        }
-
-        if (!responseGeneric && responses.stream().anyMatch(r -> r.hasHeaders)) {
-            LOG.info("operation {} has response with header, use generic response", operation.nickname);
-            responseGeneric = true;
-        }
-
-        if (operation.returnType != null && dataTypes.size() > 1) {
-            LOG.info("operation {} has multiple responses {} with multiple models {}, erase return type",
-                    operation.nickname, responsesCodes, dataTypes);
-            operation.returnType = null;
-        }
-
-        if ((operation.returnType != null || !responseGeneric) && produces.size() > 1) {
-            var specResponse = (ApiResponse) responses.get(0).vendorExtensions.get(ApiResponse.class.getName());
-            var returnTypes = specResponse.getContent().values().stream().collect(Collectors.toSet());
-            if (returnTypes.size() > 1) {
-                var mediaTypes = produces.stream().flatMap(m -> m.values().stream()).collect(Collectors.toSet());
-                LOG.info("operation {} has multiple media types {} with multiple models, erase return type",
-                        operation.nickname, mediaTypes);
-                operation.returnType = null;
-                responseGeneric = true;
-            }
-        }
-
-        // store method and status for micronaut
-
-        var extensions = operation.vendorExtensions;
-        extensions.put("httpMethod", httpMethod.toUpperCase().charAt(0) + httpMethod.substring(1).toLowerCase());
-        extensions.put("generic", responseGeneric);
-        if (responses.size() == 1) {
-            extensions.put("status", HttpStatus.valueOf(responsesCodes.get(0)).name());
-        }
-        operation.responses.forEach(r -> extensions.put("has" + r.code, true));
-
-        // jwt provider for tests
-
-        var hasSecurityJwt = (boolean) operation.vendorExtensions.getOrDefault("has401", false);
-        if (generateApiTests && hasSecurityJwt) {
-            addSupportingFile(testFolder, invokerPackage, "JwtProvider");
-            addSupportingFile(testFolder, invokerPackage, "JwtBuilder");
-        }
-
-        // async
-
-        if (supportAsync) {
-            var isVoid = operation.returnType == null;
-            var isStream = Optional.ofNullable(source.getResponses().get("200"))
-                    .map(ApiResponse::getContent)
-                    .filter(content -> content.containsKey(MediaType.APPLICATION_JSON_STREAM))
-                    .isPresent();
-            extensions.put("asyncContainer", typeMapping.get("asyncSingle"));
-            extensions.put("asyncStream", isStream);
-            if (!responseGeneric) {
-                if (isVoid) {
-                    var asyncCompletable = typeMapping.get("asyncCompletable");
-                    if ("reactor.core.publisher.Mono".equals(asyncCompletable)) {
-                        extensions.put("asyncContainer", asyncCompletable + "<java.lang.Void>");
-                    } else {
-                        extensions.put("asyncContainer", asyncCompletable);
-                    }
-                } else if ((boolean) operation.vendorExtensions.getOrDefault("has404", false)) {
-                    extensions.put("asyncContainer", typeMapping.get("asyncMaybe"));
-                }
-            }
-            if (isStream) {
-                extensions.put("asyncContainer", typeMapping.get("asyncFlowable"));
-            }
-        }
-
-        // add upper case operationId for path constants
-
-        operation.vendorExtensions.put("operationIdUpperCase",
-                StringUtils.underscore(operation.nickname).toUpperCase());
-
-        operation.pathParams.stream().filter(p -> p.defaultValue != null).forEach(p -> {
-            LOG.warn("operation {} has path param {} with unsupported default value {}, default removed",
-                    operation.nickname, p.baseName, p.defaultValue);
-            p.defaultValue = null;
-        });
-
-        // for handle client/server specific path
-
-        var clientPath = operation.path;
-        var queryParamsWithArray = operation.queryParams.stream().filter(p -> p.isArray).collect(Collectors.toList());
-        if (!queryParamsWithArray.isEmpty()) {
-            clientPath = operation.path + "?"
-                    + queryParamsWithArray.stream().map(p -> "{&" + p.baseName + "*}").collect(Collectors.joining());
-        }
-        extensions.put("clientPath", clientPath);
-
-        // for handle client/server specific path
-
-        var serverPath = operation.path;
-        for (var pathParam : operation.pathParams) {
-            var name = pathParam.baseName;
-            if (pathParam.isBoolean) {
-                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":true|false}");
-            } else if (pathParam.isInteger || pathParam.isLong) {
-                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":\\\\-?[0-9]+}");
-            } else if (pathParam.isUuid) {
-                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":" + UUID_PATTERN + "}");
-            } else if (pathParam.maxLength != null) {
-                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":" + pathParam.maxLength + "}");
-            } else if (pathParam.pattern != null && !pathParam.pattern.contains("{")) {
-                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":" + pathParam.pattern + "}");
-            }
-        }
-        extensions.put("serverPath", serverPath);
+//        var produces = operation.produces == null ? List.<Map<String, String>>of() : operation.produces;
+//
+//        // warn if operation has wildcard/range responses
+//
+//        if (operation.responses.stream().allMatch(CodegenResponse::isWildcard)) {
+//            throw new SpecValidationException("Only default response is not supported.");
+//        }
+//        if (operation.responses.stream().anyMatch(CodegenResponse::isRange)) {
+//            throw new SpecValidationException("Range responses are not supported.");
+//        }
+//
+//        // get responses for considering repsonse type
+//
+//        var responses = operation.responses.stream().filter(r -> r.is2xx || r.is3xx).collect(Collectors.toList());
+//        var responsesCodes = responses.stream().map(r -> Integer.parseInt(r.code)).collect(Collectors.toList());
+//        var responseGeneric = useGenericResponse;
+//        var dataTypes = responses.stream().map(r -> r.dataType).collect(Collectors.toSet());
+//
+//        if (!responseGeneric && responses.size() > 1) {
+//            LOG.info("operation {} has multiple responses {}, use generic response",
+//                    operation.nickname, responsesCodes);
+//            responseGeneric = true;
+//        }
+//
+//        if (!responseGeneric && responses.stream().anyMatch(r -> r.hasHeaders)) {
+//            LOG.info("operation {} has response with header, use generic response", operation.nickname);
+//            responseGeneric = true;
+//        }
+//
+//        if (operation.returnType != null && dataTypes.size() > 1) {
+//            LOG.info("operation {} has multiple responses {} with multiple models {}, erase return type",
+//                    operation.nickname, responsesCodes, dataTypes);
+//            operation.returnType = null;
+//        }
+//
+//        if ((operation.returnType != null || !responseGeneric) && produces.size() > 1) {
+//            var specResponse = (ApiResponse) responses.get(0).vendorExtensions.get(ApiResponse.class.getName());
+//            var returnTypes = specResponse.getContent().values().stream().collect(Collectors.toSet());
+//            if (returnTypes.size() > 1) {
+//                var mediaTypes = produces.stream().flatMap(m -> m.values().stream()).collect(Collectors.toSet());
+//                LOG.info("operation {} has multiple media types {} with multiple models, erase return type",
+//                        operation.nickname, mediaTypes);
+//                operation.returnType = null;
+//                responseGeneric = true;
+//            }
+//        }
+//
+//        // store method and status for micronaut
+//
+//        var extensions = operation.vendorExtensions;
+//        extensions.put("httpMethod", httpMethod.toUpperCase().charAt(0) + httpMethod.substring(1).toLowerCase());
+//        extensions.put("generic", responseGeneric);
+//        if (responses.size() == 1) {
+//            extensions.put("status", HttpStatus.valueOf(responsesCodes.get(0)).name());
+//        }
+//        operation.responses.forEach(r -> extensions.put("has" + r.code, true));
+//
+//        // jwt provider for tests
+//
+//        var hasSecurityJwt = (boolean) operation.vendorExtensions.getOrDefault("has401", false);
+//        if (generateApiTests && hasSecurityJwt) {
+//            addSupportingFile(testFolder, invokerPackage, "JwtProvider");
+//            addSupportingFile(testFolder, invokerPackage, "JwtBuilder");
+//        }
+//
+//        // async
+//
+//        if (supportAsync) {
+//            var isVoid = operation.returnType == null;
+//            var isStream = Optional.ofNullable(source.getResponses().get("200"))
+//                    .map(ApiResponse::getContent)
+//                    .filter(content -> content.containsKey(MediaType.APPLICATION_JSON_STREAM))
+//                    .isPresent();
+//            extensions.put("asyncContainer", typeMapping.get("asyncSingle"));
+//            extensions.put("asyncStream", isStream);
+//            if (!responseGeneric) {
+//                if (isVoid) {
+//                    var asyncCompletable = typeMapping.get("asyncCompletable");
+//                    if ("reactor.core.publisher.Mono".equals(asyncCompletable)) {
+//                        extensions.put("asyncContainer", asyncCompletable + "<java.lang.Void>");
+//                    } else {
+//                        extensions.put("asyncContainer", asyncCompletable);
+//                    }
+//                } else if ((boolean) operation.vendorExtensions.getOrDefault("has404", false)) {
+//                    extensions.put("asyncContainer", typeMapping.get("asyncMaybe"));
+//                }
+//            }
+//            if (isStream) {
+//                extensions.put("asyncContainer", typeMapping.get("asyncFlowable"));
+//            }
+//        }
+//
+//        // add upper case operationId for path constants
+//
+//        operation.vendorExtensions.put("operationIdUpperCase",
+//                StringUtils.underscore(operation.nickname).toUpperCase());
+//
+//        operation.pathParams.stream().filter(p -> p.defaultValue != null).forEach(p -> {
+//            LOG.warn("operation {} has path param {} with unsupported default value {}, default removed",
+//                    operation.nickname, p.baseName, p.defaultValue);
+//            p.defaultValue = null;
+//        });
+//
+//        // for handle client/server specific path
+//
+//        var clientPath = operation.path;
+//        var queryParamsWithArray = operation.queryParams.stream().filter(p -> p.isArray).collect(Collectors.toList());
+//        if (!queryParamsWithArray.isEmpty()) {
+//            clientPath = operation.path + "?"
+//                    + queryParamsWithArray.stream().map(p -> "{&" + p.baseName + "*}").collect(Collectors.joining());
+//        }
+//        extensions.put("clientPath", clientPath);
+//
+//        // for handle client/server specific path
+//
+//        var serverPath = operation.path;
+//        for (var pathParam : operation.pathParams) {
+//            var name = pathParam.baseName;
+//            if (pathParam.isBoolean) {
+//                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":true|false}");
+//            } else if (pathParam.isInteger || pathParam.isLong) {
+//                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":\\\\-?[0-9]+}");
+//            } else if (pathParam.isUuid) {
+//                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":" + UUID_PATTERN + "}");
+//            } else if (pathParam.maxLength != null) {
+//                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":" + pathParam.maxLength + "}");
+//            } else if (pathParam.pattern != null && !pathParam.pattern.contains("{")) {
+//                serverPath = serverPath.replace("{" + name + "}", "{" + name + ":" + pathParam.pattern + "}");
+//            }
+//        }
+//        extensions.put("serverPath", serverPath);
 
         return operation;
     }
@@ -414,7 +414,7 @@ public class SmartDataCodegen extends AbstractJavaCodegen
 
     private boolean isReferenceToEntity(String reference, Map<String, ModelsMap> objs) {
         return Stream
-                .of(reference)
+                .ofNullable(reference)
                 .map(path -> path.replace("#/components/schemas/", ""))
                 .map(objs::get)
                 .map(ModelsMap::getModels)

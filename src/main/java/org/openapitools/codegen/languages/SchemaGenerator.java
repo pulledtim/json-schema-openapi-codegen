@@ -15,26 +15,14 @@ import java.util.*;
 
 public class SchemaGenerator {
 
+    public static final String REFERENCE_KEY = "$ref";
+    public static final String PROPERTIES_KEY = "properties";
     private final String outputDir;
     private final String schemaRegistry;
 
     public SchemaGenerator(String outputDir, String schemaRegistry) {
         this.outputDir = outputDir;
         this.schemaRegistry = schemaRegistry;
-    }
-
-    public boolean isEntity(JsonNode model) {
-        return Optional.ofNullable(model)
-                .filter(m -> m.has("properties"))
-                .map(m -> m.get("properties"))
-                .filter(m -> m.has("id"))
-                .isPresent();
-    }
-
-    private boolean isEnum(JsonNode model) {
-        return Optional.ofNullable(model)
-                .filter(m -> m.has("enum"))
-                .isPresent();
     }
 
     /**
@@ -57,7 +45,7 @@ public class SchemaGenerator {
                 });
         models.entrySet().stream().forEach(entry -> {
             ModelsMap basedModelsMap = objs.get(entry.getKey());
-            insertReferences(entry.getValue(), models, (String) basedModelsMap.get("packageName"));
+            embedReferences(entry.getValue(), models, (String) basedModelsMap.get("packageName"));
         });
         models.entrySet().stream().filter(entry -> isEntity(entry.getValue())).forEach(entry -> {
             Map<String, JsonNode> descriptionOfModel = extractDescription(objs.get(entry.getKey()));
@@ -99,25 +87,25 @@ public class SchemaGenerator {
         return schemaRegistry + "/" + packageName + "/" + modelName;
     }
 
-    private void insertReferences(JsonNode model, Map<String, JsonNode> models, String packageName) {
-        List<JsonNode> nodesToReplace = searchForParentOfEntity(model, "$ref");
+    private void embedReferences(JsonNode model, Map<String, JsonNode> models, String packageName) {
+        List<JsonNode> nodesToReplace = searchForParentOfEntity(model, REFERENCE_KEY);
         nodesToReplace.forEach(nodeToReplace -> {
             if (nodeToReplace != null) {
                 if (nodeToReplace instanceof ObjectNode) {
                     ObjectNode parentNode = (ObjectNode) nodeToReplace;
-                    String reference = parentNode.get("$ref").asText();
+                    String reference = parentNode.get(REFERENCE_KEY).asText();
                     String modelNameToInsert = reference.replace("#/components/schemas/", "");
                     JsonNode modelToInsert = models.get(modelNameToInsert);
                     if (isEntity(modelToInsert)) {
                         //add reference
-                        parentNode.replace("$ref", JsonNodeFactory.instance.textNode(generateSchemaUrl(packageName, modelNameToInsert)));
+                        parentNode.replace(REFERENCE_KEY, JsonNodeFactory.instance.textNode(generateSchemaUrl(packageName, modelNameToInsert)));
                     } else {
                         if (isEnum(modelToInsert)) {
-                            parentNode.remove("$ref");
+                            parentNode.remove(REFERENCE_KEY);
                             modelToInsert.fields().forEachRemaining(entry -> parentNode.put(entry.getKey(), entry.getValue()));
                         } else {
-                            parentNode.put("properties", modelToInsert);
-                            parentNode.remove("$ref");
+                            parentNode.put(PROPERTIES_KEY, modelToInsert);
+                            parentNode.remove(REFERENCE_KEY);
                         }
                     }
                 }
@@ -166,5 +154,19 @@ public class SchemaGenerator {
             }
         }
         return nodesFound;
+    }
+
+    public boolean isEntity(JsonNode model) {
+        return Optional.ofNullable(model)
+                .filter(m -> m.has(PROPERTIES_KEY))
+                .map(m -> m.get(PROPERTIES_KEY))
+                .filter(m -> m.has("id"))
+                .isPresent();
+    }
+
+    private boolean isEnum(JsonNode model) {
+        return Optional.ofNullable(model)
+                .filter(m -> m.has("enum"))
+                .isPresent();
     }
 }
