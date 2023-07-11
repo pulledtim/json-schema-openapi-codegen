@@ -11,7 +11,7 @@
 
 	<groupId>io.github.pulledtim</groupId>
 	<artifactId>json-openapi-codegen</artifactId>
-	<version>3.4.2-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<name>OpenAPI codegen for Micronaut</name>
 	<description>This is an openapi generator for Micronaut.</description>
