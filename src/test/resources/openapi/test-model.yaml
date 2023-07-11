@@ -2,6 +2,7 @@ openapi: 3.0.3
 info:
   title: Spec for api tests.
   version: "1"
+  description: "Test Description"
 paths: {}
 components:
   schemas:
