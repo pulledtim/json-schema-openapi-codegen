@@ -292,6 +292,13 @@
 
 	<build>
 		<plugins>
+			<!-- Disable as the pipeline seems to adjust the pom to something that violates the rules -->
+			<plugin>
+				<artifactId>tidy-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
 
 			<!-- run surefire tests -->
 			<plugin>
