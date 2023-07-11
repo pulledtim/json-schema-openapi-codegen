@@ -82,19 +82,6 @@
 
 	<dependencies>
 
-		<dependency>
-			<groupId>io.github.wistefan</groupId>
-			<artifactId>ngsi-ld-java-mapping</artifactId>
-			<version>0.2.1</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>1.18.22</version>
-			<scope>compile</scope>
-		</dependency>
-
 		<!-- micronaut -->
 		<dependency>
 			<groupId>io.micronaut</groupId>
