@@ -1,0 +1,158 @@
+{{^vendorExtensions.x-is-one-of-interface}}{{#discriminator}}@com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME, include = com.fasterxml.jackson.annotation.JsonTypeInfo.As.EXISTING_PROPERTY, property = {{classname}}.JSON_DISCRIMINATOR)
+@com.fasterxml.jackson.annotation.JsonSubTypes({
+	{{#discriminator.mappedModels}}
+	@com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = {{modelName}}.class, name = "{{^vendorExtensions.x-discriminator-value}}{{mappingName}}{{/vendorExtensions.x-discriminator-value}}{{#vendorExtensions.x-discriminator-value}}{{{vendorExtensions.x-discriminator-value}}}{{/vendorExtensions.x-discriminator-value}}"),
+	{{/discriminator.mappedModels}}
+})
+{{/discriminator}}{{#introspected}}@io.micronaut.core.annotation.Introspected
+{{/introspected}}
+public {{#discriminator}}abstract {{/discriminator}}class {{classname}}{{^parentModel.interfaces}}{{#parent}} extends {{{parent}}}{{/parent}}{{/parentModel.interfaces}}{{#vendorExtensions.x-implements}}{{#-first}} implements {{{.}}}{{/-first}}{{^-first}}, {{{.}}}{{/-first}}{{/vendorExtensions.x-implements}} {
+
+{{#vars}}
+	public static final java.lang.String NGSI_PROPERTY_{{nameInSnakeCase}} = "{{name}}";
+{{/vars}}{{#discriminator}}	public static final String JSON_DISCRIMINATOR = "{{propertyBaseName}}";
+{{/discriminator}}
+
+{{#vars}}{{#description}}	/** {{description}} */
+{{/description}}{{#useBeanValidation}}{{>modelPropertyValidation}}{{/useBeanValidation}}
+{{#vendorExtensions.ngsi_relationship}}{{>modelRelationshipNGSI}}{{/vendorExtensions.ngsi_relationship}}
+{{^vendorExtensions.ngsi_relationship}}
+{{#vendorExtensions.ngsi_relationshiplist}}{{>modelRelationshipListNGSI}}{{/vendorExtensions.ngsi_relationshiplist}}
+{{^vendorExtensions.ngsi_relationshiplist}}{{>modelPropertyNGSI}}{{/vendorExtensions.ngsi_relationshiplist}}
+{{/vendorExtensions.ngsi_relationship}}
+	private {{>modelPropertyType}} {{name}}{{>modelPropertyDefault}};
+
+{{/vars}}
+{{#vendorExtensions.additionalPropertiesMap}}	private java.util.Map<{{{vendorExtensions.additionalPropertiesMap.keyType}}},{{{vendorExtensions.additionalPropertiesMap.valueType}}}> additionalProperties;
+
+{{/vendorExtensions.additionalPropertiesMap}}{{#discriminator}}	@com.fasterxml.jackson.annotation.JsonProperty(JSON_DISCRIMINATOR)
+	public abstract {{discriminator.propertyType}} {{discriminator.propertyGetter}}();
+
+{{/discriminator}}{{#vendorExtensions.discriminatorPropertyValue}}	@Override
+	public {{vendorExtensions.discriminatorPropertyType}} {{vendorExtensions.discriminatorPropertyGetter}}() {
+		return {{{vendorExtensions.discriminatorPropertyValue}}};
+	}
+
+{{/vendorExtensions.discriminatorPropertyValue}}	// methods
+
+	@Override
+	public boolean equals(Object object) {
+		if (object == this) {
+			return true;
+		}
+		if (object == null || getClass() != object.getClass()) {
+			return false;
+		}
+{{^vars}}{{#discriminator}}		{{classname}} other = ({{classname}}) object;
+{{/discriminator}}{{/vars}}{{#vars}}{{#-last}}		{{classname}} other = ({{classname}}) object;
+{{/-last}}{{/vars}}		return {{^vars}}{{#discriminator}}java.util.Objects.equals({{discriminator.propertyGetter}}(), other.{{discriminator.propertyGetter}}());{{/discriminator}}{{^discriminator}}super.equals(object);{{/discriminator}}{{/vars}}{{#vars}}{{^isFile}}{{^isByteArray}}java.util.Objects{{/isByteArray}}{{/isFile}}{{#isByteArray}}java.util.Arrays{{/isByteArray}}{{#isFile}}java.util.Arrays{{/isFile}}.equals({{name}}, other.{{name}}){{^-last}}
+				&& {{/-last}}{{#-last}}{{#discriminator}}
+				&& java.util.Objects.equals({{discriminator.propertyGetter}}(), other.{{discriminator.propertyGetter}}()){{/discriminator}}{{#parent}}
+				&& super.equals(object){{/parent}};{{/-last}}{{/vars}}
+	}
+
+	@Override
+	public int hashCode() {
+		return java.util.Objects.hash({{^vars}}{{#discriminator}}{{discriminator.propertyGetter}}(){{/discriminator}}{{/vars}}{{#vars}}{{^isFile}}{{^isByteArray}}{{name}}{{/isByteArray}}{{/isFile}}{{#isByteArray}}java.util.Arrays.hashCode({{name}}){{/isByteArray}}{{#isFile}}java.util.Arrays.hashCode({{name}}){{/isFile}}{{^-last}}, {{/-last}}{{#-last}}{{#discriminator}}, {{discriminator.propertyGetter}}(){{/discriminator}}{{#parent}}, super.hashCode(){{/parent}}{{/-last}}{{/vars}});
+	}
+
+	@Override
+	public java.lang.String toString() {
+		return new java.lang.StringBuilder()
+				.append("{{classname}}["){{#parent}}
+				.append("super").append(super.toString()){{/parent}}
+		{{#vars}}		.append("{{name}}{{^isByteArray}}=").append({{name}}{{/isByteArray}}{{#isByteArray}}.length=").append({{name}} == null ? null : {{name}}.length{{/isByteArray}}){{^-last}}.append(","){{/-last}}
+		{{/vars}}		.append("]")
+				.toString();
+	}
+
+	// fluent
+	{{#vars}}
+
+	public {{classname}} {{name}}({{>modelPropertyType}} new{{nameInCamelCase}}) {
+		this.{{name}} = new{{nameInCamelCase}};
+		return this;
+	}{{#isContainer}}
+	
+	public {{classname}} {{#isArray}}add{{/isArray}}{{#isMap}}put{{/isMap}}{{nameInCamelCase}}Item({{#isMap}}java.lang.String key, {{/isMap}}{{{items.datatypeWithEnum}}} {{name}}Item) {
+		{{#isNullable}}
+			{{#vendorExtensions.x-jackson-nullable}}
+		if (this.{{name}} == null || !this.{{name}}.isPresent()) {
+			this.{{name}} = org.openapitools.jackson.nullable.JsonNullable.<{{{datatypeWithEnum}}}>of(new {{#isArray}}{{#uniqueItems}}{{instantiationType.set}}{{/uniqueItems}}{{^uniqueItems}}{{instantiationType.array}}{{/uniqueItems}}{{/isArray}}{{^isArray}}{{instantiationType.map}}{{/isArray}}<>());
+		}
+		this.{{name}}.get().{{#isArray}}add({{/isArray}}{{#isMap}}put(key, {{/isMap}}{{name}}Item);
+			{{/vendorExtensions.x-jackson-nullable}}
+			{{^vendorExtensions.x-jackson-nullable}}
+		if (this.{{name}} == null) {
+			this.{{name}} = new {{#isArray}}{{#uniqueItems}}{{instantiationType.set}}{{/uniqueItems}}{{^uniqueItems}}{{instantiationType.array}}{{/uniqueItems}}{{/isArray}}{{^isArray}}{{instantiationType.map}}{{/isArray}}<>();
+		}
+		this.{{name}}.{{#isArray}}add({{/isArray}}{{#isMap}}put(key, {{/isMap}}{{name}}Item);
+			{{/vendorExtensions.x-jackson-nullable}}
+		{{/isNullable}}
+		{{^isNullable}}
+		if (this.{{name}} == null) {
+			this.{{name}} = new {{#isArray}}{{#uniqueItems}}{{instantiationType.set}}{{/uniqueItems}}{{^uniqueItems}}{{instantiationType.array}}{{/uniqueItems}}{{/isArray}}{{^isArray}}{{instantiationType.map}}{{/isArray}}<>();
+		}
+		this.{{name}}.{{#isArray}}add({{/isArray}}{{#isMap}}put(key, {{/isMap}}{{name}}Item);
+		{{/isNullable}}
+		return this;
+	}
+
+	public {{classname}} remove{{nameInCamelCase}}Item({{#isMap}}java.lang.String key{{/isMap}}{{^isMap}}{{{items.datatypeWithEnum}}} {{name}}Item{{/isMap}}) {
+		{{#isNullable}}
+			{{#vendorExtensions.x-jackson-nullable}}
+		if (this.{{name}} != null && this.{{name}}.isPresent()) {
+			this.{{name}}.get().remove({{#isMap}}key{{/isMap}}{{^isMap}}{{name}}Item{{/isMap}});
+		}
+			{{/vendorExtensions.x-jackson-nullable}}
+			{{^vendorExtensions.x-jackson-nullable}}
+		if (this.{{name}} != null) {
+			this.{{name}}.remove({{#isMap}}key{{/isMap}}{{^isMap}}{{name}}Item{{/isMap}});
+		}
+			{{/vendorExtensions.x-jackson-nullable}}
+		{{/isNullable}}
+		{{^isNullable}}
+		if (this.{{name}} != null) {
+			this.{{name}}.remove({{#isMap}}key{{/isMap}}{{^isMap}}{{name}}Item{{/isMap}});
+		}
+		{{/isNullable}}
+		return this;
+	}{{/isContainer}}
+{{/vars}}{{#vendorExtensions.additionalPropertiesMap}}
+	@com.fasterxml.jackson.annotation.JsonAnyGetter
+	public java.util.Map<{{{vendorExtensions.additionalPropertiesMap.keyType}}},{{{vendorExtensions.additionalPropertiesMap.valueType}}}> getAdditionalProperties() {
+		return additionalProperties;
+	}
+
+	@com.fasterxml.jackson.annotation.JsonAnySetter
+	public void setAdditionalProperties({{{vendorExtensions.additionalPropertiesMap.keyType}}} propertyKey,{{{vendorExtensions.additionalPropertiesMap.valueType}}} value) {
+		if (this.additionalProperties == null) {
+					this.additionalProperties = new java.util.HashMap<>();
+				}
+		this.additionalProperties.put(propertyKey, value);
+	}
+{{/vendorExtensions.additionalPropertiesMap}}
+
+	{{#vars}}{{#isEnum}}
+
+{{>modelEnum}}{{/isEnum}}{{/vars}}
+}{{/vendorExtensions.x-is-one-of-interface}}{{#vendorExtensions.x-is-one-of-interface}}{{^discriminator}}@com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.DEDUCTION, visible = true)
+{{#interfaces}}
+{{#-first}}@com.fasterxml.jackson.annotation.JsonSubTypes({
+	@com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = {{{.}}}.class),{{/-first}}{{^-first}}{{^-last}}	@com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = {{{.}}}.class),{{/-last}}{{/-first}}{{#-last}}	@com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = {{{.}}}.class)}){{/-last}}
+{{/interfaces}}
+{{/discriminator}}{{#discriminator}}@com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME, include = com.fasterxml.jackson.annotation.JsonTypeInfo.As.EXISTING_PROPERTY, property = {{classname}}.JSON_DISCRIMINATOR)
+@com.fasterxml.jackson.annotation.JsonSubTypes({
+	{{#discriminator.mappedModels}}
+	@com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = {{modelName}}.class, name = "{{^vendorExtensions.x-discriminator-value}}{{mappingName}}{{/vendorExtensions.x-discriminator-value}}{{#vendorExtensions.x-discriminator-value}}{{{vendorExtensions.x-discriminator-value}}}{{/vendorExtensions.x-discriminator-value}}"),
+	{{/discriminator.mappedModels}}
+})
+{{/discriminator}}
+public interface {{classname}}{{#vendorExtensions.x-implements}}{{#-first}} extends {{{.}}}{{/-first}}{{^-first}}, {{{.}}}{{/-first}}{{/vendorExtensions.x-implements}}{{^discriminator}} {}{{/discriminator}}{{#discriminator}} {
+{{#discriminator}}
+
+	String JSON_DISCRIMINATOR = "{{propertyBaseName}}"; {{/discriminator}}
+
+	@com.fasterxml.jackson.annotation.JsonProperty(JSON_DISCRIMINATOR)
+	{{discriminator.propertyType}} {{discriminator.propertyGetter}}();
+}{{/discriminator}}{{/vendorExtensions.x-is-one-of-interface}}

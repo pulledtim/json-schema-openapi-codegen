@@ -15,8 +15,6 @@ import org.openapitools.codegen.config.CodegenConfigurator;
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 public class AbstractCodegenTest {
 
-	static final String SPEC_API = "src/test/resources/openapi/test-api.yaml";
-	static final String SPEC_SECURITY = "src/test/resources/openapi/test-security.yaml";
 	static final String SPEC_MODEL = "src/test/resources/openapi/test-model.yaml";
 	static final Path SOURCE_FOLDER = Paths.get("gen/main/java");
 	static final Path TEST_FOLDER = Paths.get("gen/test/java");
@@ -33,7 +31,7 @@ public class AbstractCodegenTest {
 			fail("failed to delete folder", e);
 		}
 		return new CodegenConfigurator()
-				.setGeneratorName("micronaut")
+				.setGeneratorName("smart-data")
 				.setStrictSpecBehavior(true)
 				.setValidateSpec(true)
 				.setPackageName(packageName)
