@@ -82,7 +82,7 @@ jobs:
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
         run: |
-          mvn install deploy -Prelease -Dgpg.keyname=5A036613DDBAA4E0
+          mvn install deploy -Dgpg.keyname=5A036613DDBAA4E0
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
