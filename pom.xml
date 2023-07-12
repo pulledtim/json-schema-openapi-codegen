@@ -13,10 +13,10 @@
 	<artifactId>json-openapi-codegen</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
-	<name>OpenAPI codegen for Micronaut</name>
-	<description>This is an openapi generator for Micronaut.</description>
+	<name>OpenAPI codegen for Json Schema and NGSI-LD annotations</name>
+	<description>This is an openapi generator for Json Schema and NGSI-LD annotations.</description>
 	<url>https://github.com/pulledtim/json-schema-openapi-codegen</url>
-	<inceptionYear>2019</inceptionYear>
+	<inceptionYear>2023</inceptionYear>
 	<organization>
 		<name>FIWARE Foundation</name>
 		<url>http://fiware.org</url>
@@ -46,13 +46,12 @@
 
 	<distributionManagement>
 		<snapshotRepository>
-			<id>github</id>
-			<url>https://maven.pkg.github.com/pulledtim/json-schema-openapi-codegen/</url>
+			<id>ossrh</id>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 		<repository>
-			<id>github</id>
-			<name>GitHub pulledtim Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/pulledtim/json-schema-openapi-codegen</url>
+			<id>ossrh</id>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
 
