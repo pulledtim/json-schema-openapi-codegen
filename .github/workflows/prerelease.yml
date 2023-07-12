@@ -38,33 +38,51 @@ jobs:
         id: out
         run: echo "::set-output name=version::$(echo ${VERSION}-PRE-${{ steps.pr_number.outputs.nr }}-${{github.run_number}})"
 
-  # build
-  build-and-release:
+  build-and-deploy:
+
     needs: [ "generate-version" ]
     runs-on: ubuntu-latest
+
     steps:
+
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-java@v1
+      - uses: crazy-max/ghaction-import-gpg@v5
         with:
-          java-version: '17'
-          distribution: temurin
+          gpg_private_key: ${{ secrets.GPG_SECRET_KEY }}
+          passphrase: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
 
-      - name: Set the version
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+          server-id: sonatype-nexus
+          server-username: SERVER_USERNAME
+          server-password: SERVER_PASSWORD
+          gpg-private-key: ${{ secrets.GPG_SECRET_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Set version
         run: |
           mvn versions:set -DnewVersion=${{ needs.generate-version.outputs.version }}
 
-      - name: Execute tests
-        id: test
+      - name: Run tests
         run: |
           mvn clean test
 
+      - name: List keys
+        run: gpg -K
+
       - name: Build and release it
         env:
-          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
         run: |
-          mvn deploy --settings=.github/settings.xml
+          mvn deploy -Dgpg.keyname=5A036613DDBAA4E0 --settings=.github/settings.xml
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
