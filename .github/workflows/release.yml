@@ -80,7 +80,7 @@ jobs:
           SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_SECRET_KEY_PASSWORD }}
         run: |
-          mvn deploy -Dgpg.keyname=5A036613DDBAA4E0 --settings=.github/settings.xml
+          mvn deploy -Prelease -Dgpg.keyname=5A036613DDBAA4E0 --settings=.github/settings.xml
 
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
