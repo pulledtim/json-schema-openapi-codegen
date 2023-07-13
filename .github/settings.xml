@@ -3,7 +3,7 @@
 <settings>
     <servers>
         <server>
-            <id>ossrh</id>
+            <id>sonatype-nexus</id>
             <username>${env.SERVER_USERNAME}</username>
             <password>${env.SERVER_PASSWORD}</password>
         </server>
