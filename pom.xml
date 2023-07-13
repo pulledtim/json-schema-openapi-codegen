@@ -86,6 +86,8 @@
         <version.org.apache.maven.plugins.maven-gpg-plugin>3.0.1</version.org.apache.maven.plugins.maven-gpg-plugin>
         <version.org.sonatype.plugins.nexus-staging-maven-plugin>1.6.13
         </version.org.sonatype.plugins.nexus-staging-maven-plugin>
+        <version.org.apache.maven.plugins.maven-javadoc-plugin>3.2.0
+        </version.org.apache.maven.plugins.maven-javadoc-plugin>
     </properties>
 
     <dependencies>
