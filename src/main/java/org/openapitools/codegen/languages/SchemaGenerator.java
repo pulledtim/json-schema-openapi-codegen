@@ -43,6 +43,9 @@ public class SchemaGenerator {
                         throw new RuntimeException(e);
                     }
                 });
+
+        models.values().forEach(model->fieldRenames.forEach((oldKey,newKey)->replaceFieldName(oldKey, newKey, model)));
+
         models.entrySet().stream().forEach(entry -> {
             ModelsMap basedModelsMap = objs.get(entry.getKey());
             embedReferences(entry.getValue(), models, (String) basedModelsMap.get("packageName"));
@@ -56,8 +59,6 @@ public class SchemaGenerator {
                         e.setAll(descriptionOfModel);
                         e.setAll(schemaGenerics());
                     });
-
-            fieldRenames.forEach((oldKey,newKey)->replaceFieldName(oldKey, newKey, entry.getValue()));
 
             try {
                 Path path = Path.of(outputDir, "schema/", entry.getKey() + ".json");
